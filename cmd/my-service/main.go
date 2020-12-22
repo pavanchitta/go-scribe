@@ -7,8 +7,11 @@ import (
 	"io/ioutil"
 	"bytes"
 	"os"
+	"bufio"
+	"fmt"
+	"strings"
 )
-func RequestDG(audio_url string) string {
+func RequestDG(audio_url string, params map[string]string) string {
 	/* :param audio_url : url to remote audio file hosted on the web */
 	requestBody, err := json.Marshal(map[string]string{
 		"url": audio_url,
@@ -21,7 +24,7 @@ func RequestDG(audio_url string) string {
 	client := http.Client{}
 	main_url := "https://brain.deepgram.com/v2/listen"
 	request, err := http.NewRequest("POST", main_url, bytes.NewBuffer(requestBody))
-	request.SetBasicAuth("pchitta@caltech.edu", "tenjId-jeswe9-xocfav")
+	request.SetBasicAuth(params["username"], params["password"])
 	request.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		log.Fatalln(err)
@@ -44,6 +47,15 @@ func RequestDG(audio_url string) string {
 
 func main() {
 	audio_url := os.Args[1]
-	resp := RequestDG(audio_url)
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter username: ")
+	user, _ := reader.ReadString('\n')
+	user = strings.Replace(user, "\n", "", -1)
+	fmt.Print("Enter password: ")
+	pw, _ := reader.ReadString('\n')
+	pw = strings.Replace(pw, "\n", "", -1)
+	fmt.Println(user, pw)
+	params := map[string]string{"username":user, "password":pw}
+	resp := RequestDG(audio_url, params)
 	log.Println(resp)
 }
