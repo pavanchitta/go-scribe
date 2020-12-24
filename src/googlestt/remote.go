@@ -18,6 +18,7 @@ func sendGCS(w io.Writer, client *speech.Client, gcsURI  string) error {
                 Config: &speechpb.RecognitionConfig{
                         Encoding:        speechpb.RecognitionConfig_LINEAR16,
                         //SampleRateHertz: 16000,
+			EnableWordTimeOffsets: true,
                         LanguageCode:    "en-US",
                 },
                 Audio: &speechpb.RecognitionAudio{
@@ -36,10 +37,18 @@ func sendGCS(w io.Writer, client *speech.Client, gcsURI  string) error {
 
         // Print the results.
         for _, result := range resp.Results {
-                for _, alt := range result.Alternatives {
-                        fmt.Fprintf(w, "\"%v\" (confidence=%3f)\n", alt.Transcript, alt.Confidence)
-                }
-        }
+                 for _, alt := range result.Alternatives {
+                         fmt.Fprintf(w, "\"%v\" (confidence=%3f)\n", alt.Transcript, alt.Confidence)
+                         for _, word := range alt.Words {
+                                 fmt.Fprintf(w,
+                                         "Word: \"%v\" (startTime=%3f, endTime=%3f)\n",
+                                         word.Word,
+                                         float64(word.StartTime.Seconds)+float64(word.StartTime.Nanos)*1e-9,
+                                         float64(word.EndTime.Seconds)+float64(word.EndTime.Nanos)*1e-9,
+                                 )
+                         }
+                 }
+         }
         return nil
 }
 

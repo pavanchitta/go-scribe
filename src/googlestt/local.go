@@ -24,6 +24,7 @@ func send(w io.Writer, client *speech.Client, filename string) error {
                 Config: &speechpb.RecognitionConfig{
                         Encoding:        speechpb.RecognitionConfig_LINEAR16,
                         //SampleRateHertz: 16000,
+			EnableWordTimeOffsets: true,
                         LanguageCode:    "en-US",
                 },
                 Audio: &speechpb.RecognitionAudio{
